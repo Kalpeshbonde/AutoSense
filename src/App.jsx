@@ -5,6 +5,22 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';
+import { AuthProvider, useAuth } from './context/AuthContext';
+
+// Protected route — redirects to /login if not authenticated
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark-600 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return user ? children : <Navigate to="/login" replace />;
+};
 
 // Layout wrapper for protected routes
 const ProtectedLayout = ({ children }) => {
@@ -16,29 +32,39 @@ const ProtectedLayout = ({ children }) => {
   );
 };
 
-function App() {
+function AppRoutes() {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Homepage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<Homepage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
 
-        {/* Protected Routes */}
-        <Route
-          path="/dashboard"
-          element={
+      {/* Protected Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
             <ProtectedLayout>
               <Dashboard />
             </ProtectedLayout>
-          }
-        />
-        
-        {/* Redirect unknown routes */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Redirect unknown routes */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
   );
 }
 

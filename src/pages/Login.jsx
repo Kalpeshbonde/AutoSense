@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Battery, Mail, Lock, Eye, EyeOff, Chrome, ArrowRight, Zap, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -12,21 +14,25 @@ const Login = () => {
     remember: false,
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    setError('');
+
+    try {
+      await login(formData.email, formData.password);
       navigate('/dashboard');
-    }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
-    // Google OAuth logic here
-    console.log('Google login');
+    console.log('Google login — not implemented yet');
   };
 
   return (
@@ -121,7 +127,6 @@ const Login = () => {
           </motion.div>
         </div>
 
-        {/* Decorative Elements */}
         <div className="absolute top-20 right-20 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-20 left-20 w-64 h-64 bg-secondary-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
       </div>
@@ -144,13 +149,20 @@ const Login = () => {
 
           {/* Form Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-outfit font-bold mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-400">
-              Sign in to your account to continue
-            </p>
+            <h1 className="text-4xl font-outfit font-bold mb-2">Welcome Back</h1>
+            <p className="text-gray-400">Sign in to your account to continue</p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
+            >
+              {error}
+            </motion.div>
+          )}
 
           {/* Google Login */}
           <button
@@ -263,7 +275,6 @@ const Login = () => {
             </Link>
           </p>
 
-          {/* Back to Home */}
           <Link
             to="/"
             className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-400 transition-colors"
