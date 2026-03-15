@@ -17,7 +17,12 @@ async def signup(body: SignupRequest):
     user = User(
         name=body.name,
         email=body.email,
-        password=hash_password(body.password)
+        password=hash_password(body.password),
+        car_name=body.car_name,
+        car_company=body.car_company,
+        fleet_size=body.fleet_size,
+        primary_use_case=body.primary_use_case,
+        newsletter=body.newsletter,
     )
     await user.insert()
 

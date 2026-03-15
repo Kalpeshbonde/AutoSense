@@ -1,22 +1,176 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Battery, Car, AlertTriangle, CheckCircle,
-  Upload, BarChart3, Clock, Activity, ArrowRight
+  Upload, BarChart3, Clock, Activity, ArrowRight, X, Zap
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ResponsiveContainer, Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import evMockData from '../mock/evMockData';
+
+// ─── Car Selector Modal ──────────────────────────────────────────────────────
+
+const EVCarSelectorModal = ({ onClose }) => {
+  const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
+
+  const statusConfig = {
+    healthy:  { label: 'Healthy',  dotColor: '#1D9E75', textColor: 'text-green-400',  borderColor: 'border-green-500/50',  bg: 'bg-green-500/10'  },
+    warning:  { label: 'Warning',  dotColor: '#BA7517', textColor: 'text-yellow-400', borderColor: 'border-yellow-500/50', bg: 'bg-yellow-500/10' },
+    critical: { label: 'Critical', dotColor: '#E24B4A', textColor: 'text-red-400',    borderColor: 'border-red-500/50',    bg: 'bg-red-500/10'    },
+  };
+
+  const handleStart = () => {
+    if (selected) navigate(`/predict/${selected.id}`);
+  };
+
+  return (
+    // Backdrop
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      {/* Modal panel */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="glass-card w-full max-w-md p-6 relative"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+        >
+          <X className="w-4 h-4 text-gray-400" />
+        </button>
+
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <Battery className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-xl font-outfit font-bold">EV Prediction</h2>
+          </div>
+          <p className="text-sm text-gray-400 ml-12">Select a vehicle to run the health model</p>
+        </div>
+
+        {/* Car list */}
+        <div className="space-y-3 mb-6">
+          {evMockData.map(car => {
+            const s = statusConfig[car.status];
+            const isSelected = selected?.id === car.id;
+            return (
+              <motion.button
+                key={car.id}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setSelected(car)}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${
+                  isSelected
+                    ? `${s.borderColor} ${s.bg}`
+                    : 'border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* Status dot */}
+                    <div
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ background: s.dotColor }}
+                    />
+                    <div>
+                      <div className="font-outfit font-semibold text-sm">{car.carName}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{car.carCompany} · {car.year}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {/* Quick stats */}
+                    <div className="text-right hidden sm:block">
+                      <div className="text-xs text-gray-400">SoC <span className="text-white font-mono font-semibold">{car.SoC}%</span></div>
+                      <div className="text-xs text-gray-400 mt-0.5">SoH <span className="text-white font-mono font-semibold">{car.SoH}%</span></div>
+                    </div>
+                    {/* Status badge */}
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${s.textColor} ${s.bg} border ${s.borderColor}`}>
+                      {s.label}
+                    </span>
+                    {/* Checkmark */}
+                    {isSelected && (
+                      <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded details when selected */}
+                <AnimatePresence>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2"
+                    >
+                      {[
+                        { label: 'Battery Temp', value: `${car.Battery_Temperature}°C` },
+                        { label: 'Charge Cycles', value: car.Charge_Cycles },
+                        { label: 'Motor RPM', value: car.Motor_RPM },
+                      ].map(m => (
+                        <div key={m.label} className="text-center">
+                          <div className="text-xs text-gray-400">{m.label}</div>
+                          <div className="text-sm font-mono font-bold mt-0.5">{m.value}</div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* CTA */}
+        <motion.button
+          whileHover={selected ? { scale: 1.02 } : {}}
+          whileTap={selected ? { scale: 0.98 } : {}}
+          onClick={handleStart}
+          disabled={!selected}
+          className={`w-full py-3 rounded-xl font-outfit font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+            selected
+              ? 'bg-gradient-to-r from-primary-500 to-cyan-500 text-white hover:shadow-lg hover:shadow-primary-500/25'
+              : 'bg-white/5 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          <Zap className="w-4 h-4" />
+          {selected ? `Run prediction — ${selected.carName}` : 'Select a vehicle to continue'}
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// ─── Main Dashboard ──────────────────────────────────────────────────────────
 
 const Dashboard = () => {
   const { user } = useAuth();
   const firstName = user?.name?.split(' ')[0] || 'there';
+  const [showEVModal, setShowEVModal] = useState(false);
 
   const statsData = [
-    { value: '524', label: 'Total Fleet', sublabel: '+12% this month', trend: 'up', icon: Car, color: 'primary' },
-    { value: '487', label: 'Healthy Units', sublabel: '93% of fleet', trend: 'up', icon: CheckCircle, color: 'success' },
-    { value: '28', label: 'Warning', sublabel: '5% of fleet', trend: 'up', icon: AlertTriangle, color: 'warning' },
-    { value: '9', label: 'Critical', sublabel: '2% of fleet', trend: 'down', icon: Activity, color: 'danger' },
+    { value: '524', label: 'Total Fleet',   sublabel: '+12% this month', trend: 'up',   icon: Car,           color: 'primary' },
+    { value: '487', label: 'Healthy Units', sublabel: '93% of fleet',    trend: 'up',   icon: CheckCircle,   color: 'success' },
+    { value: '28',  label: 'Warning',       sublabel: '5% of fleet',     trend: 'up',   icon: AlertTriangle, color: 'warning' },
+    { value: '9',   label: 'Critical',      sublabel: '2% of fleet',     trend: 'down', icon: Activity,      color: 'danger'  },
   ];
 
   const chartData = [
@@ -30,23 +184,22 @@ const Dashboard = () => {
   ];
 
   const recentPredictions = [
-    { id: 'EV-1234', type: 'EV', rul: 127, status: 'Good', time: '2h ago' },
-    { id: 'NV-5678', type: 'Normal', rul: 89, status: 'Good', time: '3h ago' },
-    { id: 'EV-9012', type: 'EV', rul: 45, status: 'Warning', time: '5h ago' },
-    { id: 'NV-3456', type: 'Normal', rul: 15, status: 'Critical', time: '1d ago' },
+    { id: 'EV-1234', type: 'EV',     rul: 127, status: 'Good',     time: '2h ago' },
+    { id: 'NV-5678', type: 'Normal', rul: 89,  status: 'Good',     time: '3h ago' },
+    { id: 'EV-9012', type: 'EV',     rul: 45,  status: 'Warning',  time: '5h ago' },
+    { id: 'NV-3456', type: 'Normal', rul: 15,  status: 'Critical', time: '1d ago' },
   ];
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Good': return 'success';
-      case 'Warning': return 'warning';
+      case 'Good':     return 'success';
+      case 'Warning':  return 'warning';
       case 'Critical': return 'danger';
-      default: return 'gray-500';
+      default:         return 'gray-500';
     }
   };
 
   return (
-    // pt-20 md:pt-24 — accounts for fixed navbar height + breathing room
     <div className="min-h-screen bg-dark-600 pt-20 md:pt-24 px-4 md:px-6 pb-8">
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
 
@@ -71,7 +224,7 @@ const Dashboard = () => {
           </motion.div>
         </motion.div>
 
-        {/* Quick Stats — 2 cols on mobile, 4 on desktop */}
+        {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {statsData.map((stat, index) => (
             <motion.div
@@ -100,7 +253,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Quick Actions — 2 cols on mobile, 4 on desktop */}
+        {/* Quick Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,7 +262,11 @@ const Dashboard = () => {
           <h2 className="text-xl md:text-2xl font-outfit font-bold mb-3 md:mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
 
-            <Link to="/predict/ev" className="glass-card p-4 md:p-6 card-hover group text-center">
+            {/* ── EV Predict — opens modal ── */}
+            <button
+              onClick={() => setShowEVModal(true)}
+              className="glass-card p-4 md:p-6 card-hover group text-center w-full"
+            >
               <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-primary-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform">
                 <Battery className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
@@ -118,8 +275,9 @@ const Dashboard = () => {
               <div className="text-primary-500 group-hover:translate-x-2 transition-transform inline-flex items-center gap-1 md:gap-2 text-sm">
                 Start <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
               </div>
-            </Link>
+            </button>
 
+            {/* ── Normal Vehicle Predict — Link (unchanged) ── */}
             <Link to="/predict/normal" className="glass-card p-4 md:p-6 card-hover group text-center">
               <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-secondary-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform">
                 <Car className="w-6 h-6 md:w-8 md:h-8 text-white" />
@@ -131,6 +289,7 @@ const Dashboard = () => {
               </div>
             </Link>
 
+            {/* ── Batch Upload — unchanged ── */}
             <button className="glass-card p-4 md:p-6 card-hover group text-center">
               <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-success to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform">
                 <Upload className="w-6 h-6 md:w-8 md:h-8 text-white" />
@@ -142,6 +301,7 @@ const Dashboard = () => {
               </div>
             </button>
 
+            {/* ── Analytics — unchanged ── */}
             <Link to="/analytics" className="glass-card p-4 md:p-6 card-hover group text-center">
               <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-warning to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform">
                 <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-white" />
@@ -177,11 +337,11 @@ const Dashboard = () => {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="healthGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00D9FF" stopOpacity={0.3} />
+                    <stop offset="5%"  stopColor="#00D9FF" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#00D9FF" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="sohGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />
+                    <stop offset="5%"  stopColor="#6366F1" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#6366F1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
@@ -197,7 +357,7 @@ const Dashboard = () => {
                   }}
                 />
                 <Area type="monotone" dataKey="health" stroke="#00D9FF" strokeWidth={2} fill="url(#healthGradient)" name="Health Score" />
-                <Area type="monotone" dataKey="soh" stroke="#6366F1" strokeWidth={2} fill="url(#sohGradient)" name="SoH" />
+                <Area type="monotone" dataKey="soh"    stroke="#6366F1" strokeWidth={2} fill="url(#sohGradient)"    name="SoH" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -305,9 +465,9 @@ const Dashboard = () => {
                     </td>
                     <td className="py-4 px-4">
                       <span className={`badge-${getStatusColor(prediction.status)}`}>
-                        {prediction.status === 'Good' && <CheckCircle className="w-3 h-3" />}
-                        {prediction.status === 'Warning' && <AlertTriangle className="w-3 h-3" />}
-                        {prediction.status === 'Critical' && <Activity className="w-3 h-3" />}
+                        {prediction.status === 'Good'     && <CheckCircle    className="w-3 h-3" />}
+                        {prediction.status === 'Warning'  && <AlertTriangle  className="w-3 h-3" />}
+                        {prediction.status === 'Critical' && <Activity       className="w-3 h-3" />}
                         {prediction.status}
                       </span>
                     </td>
@@ -328,6 +488,12 @@ const Dashboard = () => {
         </motion.div>
 
       </div>
+
+      {/* EV Car Selector Modal */}
+      <AnimatePresence>
+        {showEVModal && <EVCarSelectorModal onClose={() => setShowEVModal(false)} />}
+      </AnimatePresence>
+
     </div>
   );
 };

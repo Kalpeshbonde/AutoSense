@@ -148,7 +148,7 @@ const Homepage = () => {
   // ============================================================================
   
   return (
-    <div className="min-h-screen bg-dark-600 overflow-hidden">
+    <div className="min-h-screen bg-dark-600">
       
       {/* ========================================================================
           ANIMATED BACKGROUND
@@ -209,7 +209,7 @@ const Homepage = () => {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="relative z-50 glass-card mx-2 md:mx-4 mt-1 md:mt-3 px-4 md:px-6 py-3 md:py-4"
+        className="fixed top-0 left-0 right-0 z-50 glass-card mx-2 md:mx-4 mt-1 md:mt-3 px-4 md:px-6 py-1.5 md:py-2"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
@@ -328,9 +328,9 @@ const Homepage = () => {
           - 3D visual on desktop, simplified on mobile
           - Responsive grid layout
       ======================================================================== */}
-      <section className="relative z-10 pt-12 md:pt-20 pb-8 md:pb-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+        <section className="relative z-10 pb-8 md:pb-16 px-4">
+          <div className="max-w-7xl mx-auto mt-16 md:mt-28">
+            <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             
             {/* Left Content - Text and CTAs */}
             <motion.div
@@ -432,24 +432,33 @@ const Homepage = () => {
                   className="absolute inset-8 rounded-full border-2 border-secondary-500/30"
                 />
                 
-                {/* Center Icon - Battery */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    animate={{ y: [0, -20, 0] }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                    className="relative"
-                  >
-                    <div className="w-24 md:w-32 h-24 md:h-32 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-3xl flex items-center justify-center electric-glow">
-                      <Battery className="w-12 md:w-16 h-12 md:h-16 text-white" />
-                    </div>
-                    {/* Pulsing glow effect */}
+               {/* Center Icon - Car */}
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <motion.div
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="absolute inset-0 bg-primary-500/30 rounded-3xl blur-xl"
-                    />
-                  </motion.div>
-                </div>
+                      animate={{ y: [0, -20, 0] }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                      className="relative"
+                    >
+                      <div className="w-28 md:w-32 h-28 md:h-32 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-3xl flex items-center justify-center electric-glow">
+                       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-20 md:w-24 h-20 md:h-24">
+                          <path d="M6 30h36v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4z" fill="white" opacity=".9"/>
+                          <path d="M8 30l4-10h24l4 10" fill="white" opacity=".6"/>
+                          <path d="M13 20l3-6h16l3 6" fill="white" opacity=".3"/>
+                          <circle cx="14" cy="34" r="4" fill="white" opacity=".95"/>
+                          <circle cx="34" cy="34" r="4" fill="white" opacity=".95"/>
+                          <circle cx="14" cy="34" r="2" fill="#1D9E75"/>
+                          <circle cx="34" cy="34" r="2" fill="#1D9E75"/>
+                          <rect x="16" y="21" width="16" height="7" rx="1" fill="white" opacity=".2"/>
+                        </svg>
+                      </div>
+                      {/* Pulsing glow effect */}
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute inset-0 bg-primary-500/30 rounded-3xl blur-xl"
+                      />
+                    </motion.div>
+                  </div>
 
                 {/* Orbiting Icons */}
                 {orbitingIcons.map((item, i) => (
@@ -503,7 +512,7 @@ const Homepage = () => {
           - 1 col mobile, 2 cols tablet, 3 cols desktop
           - Reduced text and padding for mobile
       ======================================================================== */}
-      <section id="features" className="relative z-10 py-12 md:py-16 px-4">
+      <section id="features" className="relative z-10 py-6 px-4">
         <div className="max-w-7xl mx-auto">
           
           {/* Section Header */}
@@ -511,7 +520,7 @@ const Homepage = () => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-8 md:mb-10"
           >
             {/* Reduced from text-4xl/5xl to text-2xl/3xl/4xl */}
             <h2 className="text-4xl md:text-5xl lg:text-5xl font-outfit font-bold mb-3 md:mb-4">
@@ -532,7 +541,7 @@ const Homepage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="glass-card p-6 md:p-8 card-hover group cursor-pointer relative overflow-hidden"
+                className="glass-card p-4 card-hover group cursor-pointer relative overflow-hidden"
               >
                 {/* Background Gradient on Hover */}
                 <motion.div
@@ -601,7 +610,7 @@ const Homepage = () => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-10 md:mb-16"
+            className="text-center mb-10 md:mb-6"
           >
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-outfit font-bold mb-3 md:mb-4">
               How It <span className="gradient-text">Works</span>
@@ -658,13 +667,13 @@ const Homepage = () => {
           - Key metrics display
           - Responsive grid: 2 cols on mobile, 4 on desktop
       ======================================================================== */}
-      <section className="relative z-10 py-6 md:py-8 px-4">
+      <section className="relative z-10 py-4 md:py-4 px-4">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="glass-card p-4 md:p-6 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
+            className="glass-card p-4 md:p- grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
           >
             {statsData.map((stat, i) => (
               <motion.div

@@ -55,11 +55,11 @@ export const AuthProvider = ({ children }) => {
   await fetchMe(data.access_token);
   };
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password, extraData = {}) => {
     const res = await fetch(`${API_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, ...extraData }),
     });
 
     const data = await res.json();
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('token', data.access_token);
     setToken(data.access_token);
     await fetchMe(data.access_token);
-  };
+};
 
   const logout = () => {
     localStorage.removeItem('token');

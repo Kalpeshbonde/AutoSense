@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import init_db
 from routes.auth import router as auth_router
+from routes.predict import router as predict_router
 
 
 @asynccontextmanager
@@ -13,16 +14,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="ML One API", lifespan=lifespan)
 
-# CORS — allows your React frontend to talk to the backend
+# CORS — React frontend runs on port 3000
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Vite default port
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(auth_router)
+app.include_router(predict_router)
 
 
 @app.get("/")

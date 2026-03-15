@@ -4,6 +4,7 @@ import Homepage from './pages/Homepage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import EVPrediction from './pages/EVPrediction';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -47,6 +48,17 @@ function AppRoutes() {
           <ProtectedRoute>
             <ProtectedLayout>
               <Dashboard />
+            </ProtectedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/predict/:carId"
+        element={
+          <ProtectedRoute>
+            <ProtectedLayout>
+              <EVPrediction />
             </ProtectedLayout>
           </ProtectedRoute>
         }

@@ -94,10 +94,9 @@ const Login = () => {
               </div>
             </div>
 
-            <h2 className="text-4xl font-outfit font-bold mb-4">
-              Welcome Back to
-              <br />
-              <span className="gradient-text">Smarter Maintenance</span>
+            <h2 className="font-outfit font-bold mb-4">
+              <span className="gradient-text text-5xl md:text-6xl block">AutoSense</span>
+              <span className="text-2xl md:text-3xl text-white">Smarter Maintenance</span>
             </h2>
             <p className="text-gray-400 text-lg max-w-md mx-auto">
               Continue monitoring your fleet's health and preventing costly breakdowns
@@ -149,7 +148,7 @@ const Login = () => {
 
           {/* Form Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-outfit font-bold mb-2">Welcome Back</h1>
+            <h1 className="text-5xl font-outfit font-bold mb-2">Welcome Back</h1>
             <p className="text-gray-400">Sign in to your account to continue</p>
           </div>
 
@@ -195,7 +194,7 @@ const Login = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="input-field pl-12"
-                  placeholder="john@example.com"
+                  placeholder="kalpesh@example.com"
                 />
               </div>
             </div>

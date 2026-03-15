@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Battery, Mail, Lock, Eye, EyeOff, User, Building, 
+  Battery, Mail, Lock, Eye, EyeOff, User, Building, Car,
   Users, ArrowRight, ArrowLeft, CheckCircle, Chrome, Sparkles
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -21,8 +22,9 @@ const Signup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    companyName: '',
-    fleetSize: '',
+    carName: '',
+    carCompany: '',
+    fleetSize: null,
     primaryUseCase: [],
     agreeTerms: false,
     newsletter: false,
@@ -83,14 +85,20 @@ const Signup = () => {
     setError('');
 
     try {
-      await signup(formData.fullName, formData.email, formData.password);
+      await signup(formData.fullName, formData.email, formData.password, {
+        car_name: formData.carName,
+        car_company: formData.carCompany,
+        fleet_size: formData.fleetSize,
+        primary_use_case: formData.primaryUseCase,
+        newsletter: formData.newsletter,
+      });
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+};
 
   const handleGoogleSignup = () => {
     console.log('Google signup — not implemented yet');
@@ -123,7 +131,7 @@ const Signup = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-3 mb-8">
           <Battery className="w-10 h-10 text-primary-500" />
-          <span className="text-3xl font-outfit font-bold gradient-text">PredictMaintain</span>
+          <span className="text-5xl font-outfit font-bold gradient-text">AutoSense</span>
         </Link>
 
         {/* Main Card */}
@@ -321,57 +329,87 @@ const Signup = () => {
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -50 }}
-                  className="space-y-6"
+                  className="space-y-5"
                 >
                   <div>
-                    <h2 className="text-3xl font-outfit font-bold mb-2">Tell Us About Your Fleet</h2>
+                    <h2 className="text-3xl font-outfit font-bold mb-2">Tell Us About Your Vehicle</h2>
                     <p className="text-gray-400">Help us customize your experience</p>
                   </div>
 
+                  {/* Car Name */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Company Name <span className="text-gray-500">(Optional)</span>
+                      Car Name <span className="text-gray-500">(e.g. Tesla Model 3)</span>
+                    </label>
+                    <div className="relative">
+                      <Car className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                      <input
+                        type="text"
+                        value={formData.carName}
+                        onChange={(e) => setFormData({ ...formData, carName: e.target.value })}
+                        className="input-field pl-12"
+                        placeholder="e.g. Model 3, Civic, Fortuner"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Car Company Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Car Company <span className="text-gray-500">(e.g. Tesla, Toyota)</span>
                     </label>
                     <div className="relative">
                       <Building className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                       <input
                         type="text"
-                        value={formData.companyName}
-                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                        value={formData.carCompany}
+                        onChange={(e) => setFormData({ ...formData, carCompany: e.target.value })}
                         className="input-field pl-12"
-                        placeholder="Acme Corporation"
+                        placeholder="e.g. Tesla, Toyota, Honda"
                       />
                     </div>
                   </div>
 
+                  {/* Fleet Size */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Fleet Size</label>
-                    <select
-                      value={formData.fleetSize}
-                      onChange={(e) => setFormData({ ...formData, fleetSize: e.target.value })}
-                      className="input-field"
-                    >
-                      <option value="">Select fleet size...</option>
-                      <option value="1-10">1-10 vehicles</option>
-                      <option value="11-50">11-50 vehicles</option>
-                      <option value="51-200">51-200 vehicles</option>
-                      <option value="200+">200+ vehicles</option>
-                    </select>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, fleetSize: num })}
+                          className={`py-2.5 rounded-lg text-sm font-semibold border-2 transition-all ${
+                            formData.fleetSize === num
+                              ? 'border-primary-500 bg-primary-500/20 text-primary-400'
+                              : 'border-white/10 hover:border-white/20 text-gray-400'
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                    {formData.fleetSize && (
+                      <p className="text-xs text-primary-400 mt-2">
+                        Selected: {formData.fleetSize} {formData.fleetSize === 1 ? 'vehicle' : 'vehicles'}
+                      </p>
+                    )}
                   </div>
 
+                  {/* Primary Use Case */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3">
                       Primary Use Case <span className="text-gray-500">(Select all that apply)</span>
                     </label>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {[
-                        { value: 'ev', label: 'Electric Vehicles (EV)', icon: Battery },
-                        { value: 'normal', label: 'Normal Vehicles', icon: Users },
-                        { value: 'both', label: 'Both EV and Normal', icon: Sparkles },
+                        { value: 'Electric Vehicles (EV)', label: 'Electric Vehicles (EV)', icon: Battery, desc: 'Tesla, Rivian, Nissan Leaf' },
+                        { value: 'Petrol / Diesel Vehicles', label: 'Petrol / Diesel Vehicles', icon: Car, desc: 'Fuel-Powered Vehicles, Conventional Vehicles, ICE engines' },
+                        { value: 'Both EV and Normal', label: 'Both EV and Petrol / Diesel Vehicles', icon: Sparkles, desc: 'Mixed fleet support' },
                       ].map((option) => (
                         <label
                           key={option.value}
-                          className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                             formData.primaryUseCase.includes(option.value)
                               ? 'border-primary-500 bg-primary-500/10'
                               : 'border-white/10 hover:border-white/20'
@@ -381,10 +419,19 @@ const Signup = () => {
                             type="checkbox"
                             checked={formData.primaryUseCase.includes(option.value)}
                             onChange={() => toggleUseCase(option.value)}
-                            className="w-5 h-5 rounded border-white/10 bg-dark-500 text-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                            className="w-4 h-4 rounded border-white/10 bg-dark-500 text-primary-500 focus:ring-2 focus:ring-primary-500/20"
                           />
-                          <option.icon className="w-5 h-5 text-primary-500" />
-                          <span className="flex-1">{option.label}</span>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            formData.primaryUseCase.includes(option.value)
+                              ? 'bg-primary-500/20'
+                              : 'bg-white/5'
+                          }`}>
+                            <option.icon className="w-4 h-4 text-primary-500" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium">{option.label}</div>
+                            <div className="text-xs text-gray-500">{option.desc}</div>
+                          </div>
                         </label>
                       ))}
                     </div>
@@ -392,10 +439,10 @@ const Signup = () => {
 
                   <div className="flex gap-4">
                     <button type="button" onClick={prevStep} className="flex-1 btn-secondary">
-                      <ArrowLeft className="inline-block mr-2 w-5 h-5" /> Back
+                      <ArrowLeft className="inline-block mr-2 w-4 h-4" /> Back
                     </button>
                     <button type="button" onClick={nextStep} className="flex-1 btn-primary">
-                      Next Step <ArrowRight className="inline-block ml-2 w-5 h-5" />
+                      Next Step <ArrowRight className="inline-block ml-2 w-4 h-4" />
                     </button>
                   </div>
                 </motion.div>
